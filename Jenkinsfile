@@ -1,5 +1,6 @@
 try {
     def appName=env.APP_NAME
+    dev mavenMirror=env.MAVEN_MIRROR_URL
     def gitSourceUrl=env.GIT_SOURCE_URL
     def gitSourceRef=env.GIT_SOURCE_REF
     def project=""
@@ -13,6 +14,9 @@ try {
         }
     }
     node("maven") {
+        environment {
+            MAVEN_MIRROR_URL = "${mavenMirror}"
+        }
         stage("Checkout") {
             git url: "${gitSourceUrl}", branch: "${gitSourceRef}"
         }
