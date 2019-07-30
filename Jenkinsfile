@@ -21,6 +21,12 @@ try {
             stash name:"jar", includes:"target/app.jar"
         }
     }
+    node {
+        stage("Build Image") {
+            unstash name:"jar"
+            sh "oc start-build ${appName}-build --from-file=target/app.jar -n ${project}"
+        }
+    }
 } catch (err) {
     echo "in catch block"
     echo "Caught: ${err}"
