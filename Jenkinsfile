@@ -18,6 +18,8 @@ try {
         }
         stage("Build JAR") {
             sh "mvn clean package"
+            sh "mvn sonar:sonar -Dsonar.host.url=http://sonarqube.cicd.svc:9000"           
+            stash name:"jar", includes:"target/app.jar"
         }
     }
 } catch (err) {
