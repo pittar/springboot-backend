@@ -1,6 +1,6 @@
 try {
     def appName=env.APP_NAME
-    dev mavenMirror=env.MAVEN_MIRROR_URL
+    def mavenMirror=env.MAVEN_MIRROR_URL
     def gitSourceUrl=env.GIT_SOURCE_URL
     def gitSourceRef=env.GIT_SOURCE_REF
     def project=""
