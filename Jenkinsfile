@@ -8,6 +8,7 @@ try {
         stage("Initialize") {
             project = env.PROJECT_NAME
             echo "appName: ${appName}"
+            echo "mavenMirror: ${mavenMirror}"
             echo "gitSourceUrl: ${gitSourceUrl}"
             echo "gitSourceUrl: ${gitSourceUrl}"
             echo "gitSourceRef: ${gitSourceRef}"
