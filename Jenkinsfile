@@ -14,14 +14,20 @@ try {
             echo "gitSourceRef: ${gitSourceRef}"
         }
     }
+    environment {
+        MAVEN_MIRROR_URL = ${mavenMirror}
+    }
     node("maven") {
         environment {
-            MAVEN_MIRROR_URL = "${mavenMirror}"
+            MAVEN_MIRROR_URL = ${mavenMirror}
         }
         stage("Checkout") {
             git url: "${gitSourceUrl}", branch: "${gitSourceRef}"
         }
         stage("Build JAR") {
+            environment {
+                MAVEN_MIRROR_URL = ${mavenMirror}
+            }
             sh "mvn clean package"
             stash name:"jar", includes:"target/app.jar"
         }
