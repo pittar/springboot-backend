@@ -1,5 +1,6 @@
 try {
     def appName=env.APP_NAME
+    def mavenMirror=env.MAVEN_MIRROR_URL
     def gitSourceUrl=env.GIT_SOURCE_URL
     def gitSourceRef=env.GIT_SOURCE_REF
     def project=""
@@ -7,6 +8,7 @@ try {
         stage("Initialize") {
             project = env.PROJECT_NAME
             echo "appName: ${appName}"
+            echo "mavenMirror: ${mavenMirror}"
             echo "gitSourceUrl: ${gitSourceUrl}"
             echo "gitSourceUrl: ${gitSourceUrl}"
             echo "gitSourceRef: ${gitSourceRef}"
