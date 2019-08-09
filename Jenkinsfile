@@ -47,7 +47,7 @@ try {
                     def deploymentsExists = openshift.selector( "dc", "${appName}").exists()
                     if (!deploymentsExists) {
                             echo "Deployments do not yet exist.  Create the environment."
-                            def models = openshift.process( "cicd//demo-app-${backend}-template", "-p", "IMAGE_TAG=dev" )
+                            def models = openshift.process( "cicd//demo-app-${appName}-template", "-p", "IMAGE_TAG=dev" )
                             def created = openshift.create( models )
                     }
                     echo "Rollout to DEV."
