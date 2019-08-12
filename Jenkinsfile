@@ -20,8 +20,12 @@ try {
         stage("Build JAR") {
             echo "Build the app."
             sh "mvn clean package"
-            sh "mvn sonar:sonar -Dsonar.host.url=http://sonarqube.cicd.svc:9000"
             stash name:"jar", includes:"target/app.jar"
+        }
+        stage("Quality Check") {
+            sh "mvn sonar:sonar -Dsonar.host.url=http://sonarqube.cicd.svc:9000"
+            sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeBom"
+            // dependencyTrackPublisher(artifact: 'target/bom.xml', artifactType: 'bom', projectName: "${appName}", synchronous: false)
         }
         stage("Build Image") {
             echo "Build container image."
@@ -72,7 +76,7 @@ try {
                     def deploymentsExists = openshift.selector( "dc", "${appName}").exists()
                     if (!deploymentsExists) {
                             echo "Deployments do not yet exist.  Create the environment."
-                            def models = openshift.process( "cicd//demo-app-${appname}-template", "-p", "IMAGE_TAG=qa" )
+                            def models = openshift.process( "cicd//demo-app-${appName}-template", "-p", "IMAGE_TAG=qa" )
                             def created = openshift.create( models )
                     }
                     echo "Rollout to QA."
