@@ -4,6 +4,7 @@ try {
     def gitSourceUrl=env.GIT_SOURCE_URL
     def gitSourceRef=env.GIT_SOURCE_REF
     def project=""
+    def projectVersion=""
     node("maven") {
         stage("Initialize") {
             project = env.PROJECT_NAME
@@ -16,6 +17,9 @@ try {
         stage("Checkout") {
             echo "Checkout source."
             git url: "${gitSourceUrl}", branch: "${gitSourceRef}"
+            echo "Read POM info."
+            pom = readMavenPom file: 'pom.xml'
+            projectVersion = pom.version
         }
         stage("Build JAR") {
             echo "Build the app."
@@ -26,7 +30,7 @@ try {
    			sh "mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install -Dmaven.test.failure.ignore=false"
             sh "mvn sonar:sonar -Dsonar.jacoco.reportPaths=target/coverage-reports/jacoco-unit.exec -Dsonar.host.url=http://sonarqube.cicd.svc:9000"
             sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeBom"
-            dependencyTrackPublisher(artifact: 'target/bom.xml', artifactType: 'bom', projectName: "${appName}", synchronous: false)
+            dependencyTrackPublisher(artifact: 'target/bom.xml', artifactType: 'bom', projectName: "${appName}", projectVersion: "${projectVersion}", synchronous: false)
         }
         stage("Build Image") {
             echo "Build container image."
