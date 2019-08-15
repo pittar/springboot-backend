@@ -30,7 +30,7 @@ try {
         }
         stage("Build Image") {
             echo "Build container image."
-            unstash name:"jar"
+            // unstash name:"jar"
             openshift.withCluster() {
                 openshift.withProject('cicd') {
                     sh "oc start-build ${appName}-build --from-file=target/app.jar -n cicd --follow"
