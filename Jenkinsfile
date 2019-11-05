@@ -18,20 +18,22 @@ try {
             echo "gitSourceUrl: ${gitSourceUrl}"
             echo "gitSourceRef: ${gitSourceRef}"
 
-            openshift.withProject() {
-                if (!projectQuery.contains(appName)) {
-                    stage ('Creating Project') {
-                        print "Creating project ${appName} DEV and QA."
-                        sh "oc new-project ${appName}-dev"
-                        sh "oc new-project ${appName}-qa"
+            openshift.withCluster() {
+                openshift.withProject() {
+                    if (!projectQuery.contains(appName)) {
+                        stage ('Creating Project') {
+                            print "Creating project ${appName} DEV and QA."
+                            sh "oc new-project ${appName}-dev"
+                            sh "oc new-project ${appName}-qa"
 
-                        print "Give developers access to these projects."
-                        sh "oc adm policy add-role-to-group view developer -n ${appName}-dev"
-                        sh "oc adm policy add-role-to-group view developer -n ${appName}-qa"
+                            print "Give developers access to these projects."
+                            sh "oc adm policy add-role-to-group view developer -n ${appName}-dev"
+                            sh "oc adm policy add-role-to-group view developer -n ${appName}-qa"
 
-                        print "Give new projects the ability to pull images from CI/CD."
-                        sh "oc policy add-role-to-user system:image-puller system:serviceaccount:${appName}-dev:default -n cicd"
-                        sh "oc policy add-role-to-user system:image-puller system:serviceaccount:${appName}-qa:default -n cicd"
+                            print "Give new projects the ability to pull images from CI/CD."
+                            sh "oc policy add-role-to-user system:image-puller system:serviceaccount:${appName}-dev:default -n cicd"
+                            sh "oc policy add-role-to-user system:image-puller system:serviceaccount:${appName}-qa:default -n cicd"
+                        }
                     }
                 }
             }
