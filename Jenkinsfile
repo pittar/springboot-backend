@@ -1,18 +1,40 @@
 try {
     def appName=env.APP_NAME
-    def mavenMirror=env.MAVEN_MIRROR_URL
     def gitSourceUrl=env.GIT_SOURCE_URL
     def gitSourceRef=env.GIT_SOURCE_REF
     def project=""
     def projectVersion=""
     node("maven") {
+
+        // Create new project for the feature branch if it does not exist
+        String projectQuery = sh (
+            script: 'oc get projects',
+            returnStdout: true
+        ).trim()
+
         stage("Initialize") {
             project = env.PROJECT_NAME
             echo "appName: ${appName}"
-            echo "mavenMirror: ${mavenMirror}"
-            echo "gitSourceUrl: ${gitSourceUrl}"
             echo "gitSourceUrl: ${gitSourceUrl}"
             echo "gitSourceRef: ${gitSourceRef}"
+
+            openshift.withProject() {
+                if (!projectQuery.contains(appName)) {
+                    stage ('Creating Project') {
+                        print "Creating project ${appName} DEV and QA."
+                        sh "oc new-project ${appName}-dev"
+                        sh "oc new-project ${appName}-qa"
+
+                        print "Give developers access to these projects."
+                        sh "oc adm policy add-role-to-group view developer -n ${appName}-dev"
+                        sh "oc adm policy add-role-to-group view developer -n ${appName}-qa"
+
+                        print "Give new projects the ability to pull images from CI/CD."
+                        sh "oc policy add-role-to-user system:image-puller system:serviceaccount:${appName}-dev:default -n cicd"
+                        sh "oc policy add-role-to-user system:image-puller system:serviceaccount:${appName}-qa:default -n cicd"
+                    }
+                }
+            }
         }
         stage("Checkout") {
             echo "Checkout source."
@@ -24,7 +46,6 @@ try {
         stage("Build JAR") {
             echo "Build the app."
             sh "mvn clean package"
-            // stash name:"jar", includes:"target/app.jar"
         }
         stage("Quality Check") {
    			sh "mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install -Dmaven.test.failure.ignore=false"
@@ -52,15 +73,15 @@ try {
         stage("Deploy DEV") {
             echo "Deploy to DEV."
             openshift.withCluster() {
-                openshift.withProject('app-dev') {
-                    def deploymentsExists = openshift.selector( "dc", "${appName}").exists()
+                openshift.withProject("${appName}-dev") {
+                    def deploymentsExists = openshift.selector( "dc", "app-backend").exists()
                     if (!deploymentsExists) {
                             echo "Deployments do not yet exist.  Create the environment."
-                            def models = openshift.process( "cicd//demo-app-${appName}-template", "-p", "IMAGE_TAG=dev" )
+                            def models = openshift.process( "cicd//app-backend-template", "-p", "IMAGE_TAG=dev" )
                             def created = openshift.create( models )
                     }
                     echo "Rollout to DEV."
-                    def dc = openshift.selector('dc', "${appName}")
+                    def dc = openshift.selector('dc', "app-backend")
                     dc.rollout().latest()
                     dc.rollout().status()
                 }
@@ -77,15 +98,15 @@ try {
         stage("Deploy QA") {
             echo "Deploy to QA"
             openshift.withCluster() {
-                openshift.withProject('app-qa') {
-                    def deploymentsExists = openshift.selector( "dc", "${appName}").exists()
+                openshift.withProject("${appName}-qa") {
+                    def deploymentsExists = openshift.selector( "dc", "app-backend").exists()
                     if (!deploymentsExists) {
                             echo "Deployments do not yet exist.  Create the environment."
-                            def models = openshift.process( "cicd//demo-app-${appName}-template", "-p", "IMAGE_TAG=qa" )
+                            def models = openshift.process( "cicd//app-backend-template", "-p", "IMAGE_TAG=qa" )
                             def created = openshift.create( models )
                     }
                     echo "Rollout to QA."
-                    def dc = openshift.selector('dc', "${appName}")
+                    def dc = openshift.selector('dc', "app-backend")
                     dc.rollout().latest()
                     dc.rollout().status()
                 }
