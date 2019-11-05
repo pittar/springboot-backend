@@ -30,7 +30,7 @@ try {
    			sh "mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install -Dmaven.test.failure.ignore=false"
             sh "mvn sonar:sonar -Dsonar.jacoco.reportPaths=target/coverage-reports/jacoco-unit.exec -Dsonar.host.url=http://sonarqube.cicd.svc:9000"
             sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeBom"
-            dependencyTrackPublisher(artifact: 'target/bom.xml', artifactType: 'bom', projectName: "${appName}", projectVersion: "${projectVersion}", synchronous: false)
+            //dependencyTrackPublisher(artifact: 'target/bom.xml', artifactType: 'bom', projectName: "${appName}", projectVersion: "${projectVersion}", synchronous: false)
         }
         stage("Build Image") {
             echo "Build container image."
@@ -63,7 +63,7 @@ try {
                     def dc = openshift.selector('dc', "${appName}")
                     dc.rollout().latest()
                     dc.rollout().status()
-                }            
+                }
             }
         }
         stage("Tag for QA") {
@@ -88,7 +88,7 @@ try {
                     def dc = openshift.selector('dc', "${appName}")
                     dc.rollout().latest()
                     dc.rollout().status()
-                }            
+                }
             }
         }
     }
