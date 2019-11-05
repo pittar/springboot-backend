@@ -76,14 +76,14 @@ try {
             echo "Deploy to DEV."
             openshift.withCluster() {
                 openshift.withProject("${appName}-dev") {
-                    def deploymentsExists = openshift.selector( "dc", "app-backend").exists()
+                    def deploymentsExists = openshift.selector( "dc", "backend").exists()
                     if (!deploymentsExists) {
                             echo "Deployments do not yet exist.  Create the environment."
                             def models = openshift.process( "cicd//app-backend-template", "-p", "IMAGE_TAG=dev" )
                             def created = openshift.create( models )
                     }
                     echo "Rollout to DEV."
-                    def dc = openshift.selector('dc', "app-backend")
+                    def dc = openshift.selector('dc', "backend")
                     dc.rollout().latest()
                     dc.rollout().status()
                 }
@@ -101,14 +101,14 @@ try {
             echo "Deploy to QA"
             openshift.withCluster() {
                 openshift.withProject("${appName}-qa") {
-                    def deploymentsExists = openshift.selector( "dc", "app-backend").exists()
+                    def deploymentsExists = openshift.selector( "dc", "backend").exists()
                     if (!deploymentsExists) {
                             echo "Deployments do not yet exist.  Create the environment."
                             def models = openshift.process( "cicd//app-backend-template", "-p", "IMAGE_TAG=qa" )
                             def created = openshift.create( models )
                     }
                     echo "Rollout to QA."
-                    def dc = openshift.selector('dc', "app-backend")
+                    def dc = openshift.selector('dc', "backend")
                     dc.rollout().latest()
                     dc.rollout().status()
                 }
