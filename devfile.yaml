@@ -47,13 +47,13 @@ apiVersion: 1.0.0
 commands:
   - name: maven build
     actions:
-      - workdir: '${CHE_PROJECTS_ROOT}/backend'
+      - workdir: '${CHE_PROJECTS_ROOT}/spring-boot-backend'
         type: exec
         command: mvn clean install
         component: maven
   - name: maven build and run
     actions:
-      - workdir: '${CHE_PROJECTS_ROOT}/backend'
+      - workdir: '${CHE_PROJECTS_ROOT}/spring-boot-backend'
         type: exec
         command: mvn clean install && java -jar ./target/*.jar
         component: maven
